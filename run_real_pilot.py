@@ -36,12 +36,12 @@ OFFICIAL_VAL_SPLIT = [
     os.path.join('ROIs1868', '127'), os.path.join('ROIs1868', '17')
 ]
 
-def check_real_data_exists(data_root):
-    if not os.path.exists(data_root) or not os.path.isdir(data_root):
+def check_real_data_exists(s1_root, s2_root):
+    if not os.path.exists(s1_root) or not os.path.isdir(s1_root) or \
+       not os.path.exists(s2_root) or not os.path.isdir(s2_root):
         return False
     
-    # Official directories are uppercase S1 and S2
-    tif_files = glob.glob(os.path.join(data_root, '**', 'S1', '**', '*.tif'), recursive=True)
+    tif_files = glob.glob(os.path.join(s1_root, '**', 'S1', '**', '*.tif'), recursive=True)
     if not tif_files:
         return False
     return True
@@ -123,23 +123,22 @@ def extract_timestamp_from_filename(filename):
 
 def extract_patch_id_from_filename(filename):
     """
-    Extracts the patch identifier, typically at index 4 (e.g. 'p1').
+    Extracts the patch identifier after '_patch_'
+    (e.g. 's1_ROIs..._patch_113.tif' -> '113').
     """
-    parts = os.path.basename(filename).split('_')
-    if len(parts) < 5:
-        raise ValueError(f"Filename {filename} does not match official SEN12MS-CR-TS patch ID format.")
-    return parts[4]
+    return os.path.basename(filename).split('_patch_')[-1].replace('.tif', '')
 
 def main():
     parser = argparse.ArgumentParser(description="Real-data pilot validation for SEN12MS-CR-TS.")
-    parser.add_argument('--data_root', type=str, required=True, help="Path to real SEN12MS-CR-TS dataset subset.")
+    parser.add_argument('--s1_root', type=str, required=True, help="Path to real S1 dataset root.")
+    parser.add_argument('--s2_root', type=str, required=True, help="Path to real S2 dataset root.")
     parser.add_argument('--n_history', type=int, default=3, help="Number of historical optical observations required.")
     parser.add_argument('--cloud_threshold', type=float, default=0.05, help="Project cloud cover sequence-validity threshold (not internal s2cloudless 0.4).")
     parser.add_argument('--split', type=str, default='test', choices=['train', 'val', 'test', 'all'])
     
     args = parser.parse_args()
     
-    if not check_real_data_exists(args.data_root):
+    if not check_real_data_exists(args.s1_root, args.s2_root):
         print("\nERROR: No real SEN12MS-CR-TS data found. Synthetic validation is not real-data validation.")
         print("Stopping pilot script.")
         exit(1)
@@ -159,13 +158,9 @@ def main():
     observations_by_patch = {}
     
     for roi_path in valid_rois:
-        full_roi_path = os.path.join(args.data_root, roi_path)
-        if not os.path.isdir(full_roi_path):
-            continue
-            
         for tdx in range(30):
-            path_s1 = os.path.join(full_roi_path, 'S1', str(tdx))
-            path_s2 = os.path.join(full_roi_path, 'S2', str(tdx))
+            path_s1 = os.path.join(args.s1_root, roi_path, 'S1', str(tdx))
+            path_s2 = os.path.join(args.s2_root, roi_path, 'S2', str(tdx))
             
             if not os.path.exists(path_s1) or not os.path.exists(path_s2):
                 continue

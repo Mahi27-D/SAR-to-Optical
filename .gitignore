@@ -7,8 +7,8 @@ __pycache__/
 *.ckpt
 
 # Datasets
-data/
-datasets/
+/data/
+/datasets/
 SEN12MS-CR-TS/
 
 # Generated outputs
