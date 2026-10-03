@@ -1,0 +1,29 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pt
+*.pth
+*.ckpt
+
+# Datasets
+data/
+datasets/
+SEN12MS-CR-TS/
+
+# Generated outputs
+checkpoints/
+outputs/
+runs/
+logs/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
