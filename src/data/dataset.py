@@ -67,9 +67,21 @@ class SARToOpticalDataset(Dataset):
         optical_subset = extract_optical_bands(s2_img)
         optical_tensor = torch.from_numpy(optical_subset.astype(np.float32))
         
+        history_tensors = []
+        for h in seq.get('history', []):
+            h_path = h.get('s2_path')
+            if not h_path or not os.path.exists(h_path):
+                raise FileNotFoundError(f"History optical path missing or invalid: {h_path}")
+            h_img = load_geotiff(h_path, expected_bands=13)
+            h_subset = extract_optical_bands(h_img)
+            history_tensors.append(torch.from_numpy(h_subset.astype(np.float32)))
+            
+        history_optical_tensor = torch.stack(history_tensors, dim=0) if history_tensors else torch.empty(0)
+
         sample = {
             "sar": sar_tensor,
             "target_optical": optical_tensor,
+            "history_optical": history_optical_tensor,
             "target_s1_timestamp": seq.get('target_s1_timestamp'),
             "target_s2_timestamp": seq.get('target_s2_timestamp'),
             "target_index": seq.get('target_index'),

@@ -32,9 +32,10 @@ def validate_index(index_path, expected_n=3):
             prev_ts = None
             
             for h in seq["history"]:
-                for key in ["history_index", "days_since", "month", "s2_timestamp"]:
+                for key in ["history_index", "days_since", "month", "s2_timestamp", "s2_path"]:
                     assert key in h, f"History missing key: {key}"
                     
+                assert os.path.exists(h["s2_path"]), f"History S2 path not found: {h['s2_path']}"
                 hist_ts = datetime.fromisoformat(h["s2_timestamp"])
                 
                 assert hist_ts < target_ts, "History timestamp not strictly less than target timestamp"

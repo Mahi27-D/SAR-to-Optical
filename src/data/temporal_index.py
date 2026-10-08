@@ -47,6 +47,7 @@ def extract_causal_sequences(location_observations: List[Dict[str, Any]], N: int
                     "days_since": days_since,
                     "month": h['s2_timestamp'].month,
                     "s2_timestamp": h['s2_timestamp'].strftime("%Y-%m-%d"),
+                    "s2_path": h['s2_path']
                 })
                 
             valid_sequences.append({
